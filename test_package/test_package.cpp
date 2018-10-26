@@ -3,6 +3,8 @@
 
 #include <tcl.h>
 
+// from https://wiki.tcl-lang.org/page/How+to+embed+Tcl+in+C+applications
+
 static int
 StringCatCmd(
     ClientData dummy,                /* Not used. */

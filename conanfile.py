@@ -9,9 +9,9 @@ class TclConan(ConanFile):
     name = "tcl"
     version = "8.6.8"
     description = "Tcl is a very powerful but easy to learn dynamic programming language."
-    topics = ["conan", "tcl"]
+    topics = ["conan", "tcl", "scripting", "programming"]
     url = "https://github.com/bincrafters/conan-tcl"
-    homepage = "http://tcl.tk"
+    homepage = "https://tcl.tk"
     author = "Bincrafters <bincrafters@gmail.com>"
     license = "TCL"
     exports = ["LICENSE.md"]
