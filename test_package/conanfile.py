@@ -2,7 +2,7 @@
 
 import os
 
-from conans import ConanFile, CMake, tools, RunEnvironment
+from conans import ConanFile, CMake
 
 
 class TclTestConan(ConanFile):
@@ -20,9 +20,5 @@ class TclTestConan(ConanFile):
         self.copy('*.so*', dst='bin', src='lib')
 
     def test(self):
-        with tools.environment_append(RunEnvironment(self).vars):
-            bin_path = os.path.join('bin', 'embed_tcl')
-            if self.settings.os == 'Macos':
-                self.run('DYLD_LIBRARY_PATH={} {}'.format(os.environ.get('DYLD_LIBRARY_PATH', ''), bin_path))
-            else:
-                self.run(bin_path)
+        bin_path = os.path.join("bin", "test_package")
+        self.run(bin_path, run_environment=True)

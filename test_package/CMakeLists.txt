@@ -1,13 +1,10 @@
+project(test_package)
 cmake_minimum_required(VERSION 2.8.12)
-project(PackageTest C)
+
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_executable(embed_tcl embed_tcl.c)
-target_link_libraries(embed_tcl ${CONAN_LIBS})
-
-enable_testing()
-add_test(NAME embed_tcl
-         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-         COMMAND embed_tcl)
+add_executable(${PROJECT_NAME} test_package.cpp)
+target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})
