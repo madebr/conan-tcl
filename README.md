@@ -61,4 +61,4 @@ The following command both runs all the steps of the conan file, and publishes t
 NOTE: The conan recipe license applies only to the files of this recipe, which can be used to build and package tcl.
 It does *not* in any way apply or is related to the actual software being packaged.
 
-[MIT](git@github.com:bincrafters/conan-tcl.git/blob/8.6.8/stable/LICENSE)
+[MIT](git@github.com:bincrafters/conan-tcl.git/blob/8.6.8/stable/LICENSE.md)

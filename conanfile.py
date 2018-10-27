@@ -21,7 +21,7 @@ class TclConan(ConanFile):
         "shared": [True, False]
     }
     default_options = {
-        "fPIC": False,
+        "fPIC": True,
         "shared": False,
     }
     _source_subfolder = "sources"
@@ -45,24 +45,45 @@ class TclConan(ConanFile):
         extracted_dir = "{}{}".format(self.name, self.version)
         os.rename(extracted_dir, self._source_subfolder)
 
+        unix_config_dir = self._get_configure_dir("unix")
+        # When disabling 64-bit support (in 32-bit), this test must be 0 in order to use "long long" for 64-bit ints
+        # (${tcl_type_64bit} can be either "__int64" or "long long")
+        tools.replace_in_file(os.path.join(unix_config_dir, "configure"),
+                              "(sizeof(${tcl_type_64bit})==sizeof(long))",
+                              "(sizeof(${tcl_type_64bit})!=sizeof(long))")
+
+        unix_makefile_in = os.path.join(unix_config_dir, "Makefile.in")
+        # Avoid building internal libraries as shared libraries
+        tools.replace_in_file(unix_makefile_in, "--enable-shared --enable-threads", "--enable-threads")
+        # Avoid clearing CFLAGS and LDFLAGS in the makefile
+        tools.replace_in_file(unix_makefile_in, "\nCFLAGS\t", "\n#CFLAGS\t")
+        tools.replace_in_file(unix_makefile_in, "\nLDFLAGS\t", "\n#LDFLAGS\t")
+        # Use CFLAGS and CPPFLAGS as argument to CC
+        tools.replace_in_file(unix_makefile_in, "${CFLAGS}", "${CFLAGS} ${CPPFLAGS}")
+
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
         else:
             if self.options.shared:
-                self.options.fPIC = True
-                # del self.options.fPIC  # Does not make sense.
+                del self.options.fPIC  # Does not make sense.
 
-    @property
-    def _configure_dir(self):
-        if self.settings.os == "Windows":
-            return os.path.join(self.source_folder, self._source_subfolder, "win")
+    def _get_default_build_system(self):
+        if self.settings.os == "Macos":
+            return "macosx"
         elif self.settings.os == "Linux":
-            return os.path.join(self.source_folder, self._source_subfolder, "unix")
-        elif self.settings.os == "Macos":
-            return os.path.join(self.source_folder, self._source_subfolder, "macosx")
+            return "unix"
+        elif self.settings.os == "Windows":
+            return "win"
         else:
-            raise ConanExceptionInUserConanfileMethod("Invalid os: {}".format(self.settings.os))
+            raise ConanExceptionInUserConanfileMethod("Unknown settings.os={}".format(self.settings.os))
+
+    def _get_configure_dir(self, build_system=None):
+        if build_system is None:
+            build_system = self._get_default_build_system()
+        if build_system not in ["win", "unix", "macosx"]:
+            raise ConanExceptionInUserConanfileMethod("Invalid build system: {}".format(build_system))
+        return os.path.join(self.source_folder, self._source_subfolder, build_system)
 
     def _get_auto_tools(self):
         autoTools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
@@ -86,11 +107,11 @@ class TclConan(ConanFile):
         self.run(
             '{vcvars} && nmake -nologo -f "{cfgdir}/makefile.vc" shell INSTALLDIR="{pkgdir}" OPTS={opts} {target}'.format(
                 vcvars=vcvars_command,
-                cfgdir=self._configure_dir,
+                cfgdir=self._get_configure_dir("win"),
                 pkgdir=self.package_folder,
                 opts=",".join(opts),
                 target=target,
-            ), cwd=self._configure_dir,
+            ), cwd=self._get_configure_dir("win"),
         )
 
     def _build_autotools(self):
@@ -98,11 +119,10 @@ class TclConan(ConanFile):
             "--enable-threads",
             "--enable-shared" if self.options.shared else "--disable-shared",
             "--enable-symbols" if self.settings.build_type == "Debug" else "--disable-symbols",
+            "--enable-64bit" if self.settings.arch == "x86_64" else "--disable-64bit",
         ]
-        if self.settings.arch == "x86_64":
-            conf_args.append("--enable-64bit")
         autoTools = self._get_auto_tools()
-        autoTools.configure(configure_dir=self._configure_dir, args=conf_args)
+        autoTools.configure(configure_dir=self._get_configure_dir(), args=conf_args, vars={"PKG_CFG_ARGS": " ".join(conf_args)})
 
         # https://core.tcl.tk/tcl/tktview/840660e5a1
         for root, _, files in os.walk(self.build_folder):
