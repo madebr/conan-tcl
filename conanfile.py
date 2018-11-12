@@ -174,7 +174,7 @@ class TclConan(ConanFile):
         self.cpp_info.libdirs = libdirs
         self.cpp_info.libs = libs
         self.cpp_info.includedirs = ["include"]
-        self.env_info.TCL_LIBRARY = os.path.join(self.package_folder, "lib", "tcl{}".format(".".join(self.version.split(".")[:2])))
+        self.env_info.TCL_LIBRARY = os.path.join(self.package_folder, "lib", "{}{}".format(self.name, ".".join(self.version.split(".")[:2])))
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework Cocoa")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
