@@ -45,11 +45,6 @@ class TclConan(ConanFile):
         extracted_dir = "{}{}".format(self.name, self.version)
         os.rename(extracted_dir, self._source_subfolder)
 
-        # https://core.tcl.tk/tcl/tktview/840660e5a1
-        for root, _, files in os.walk(self.source_folder):
-            if "Makefile" in files:
-                tools.replace_in_file(os.path.join(root, "Makefile"), "-Dstrtod=fixstrtod", "", strict=False)
-
         unix_config_dir = self._get_configure_dir("unix")
         # When disabling 64-bit support (in 32-bit), this test must be 0 in order to use "long long" for 64-bit ints
         # (${tcl_type_64bit} can be either "__int64" or "long long")
@@ -128,6 +123,11 @@ class TclConan(ConanFile):
         ]
         autoTools = self._get_auto_tools()
         autoTools.configure(configure_dir=self._get_configure_dir(), args=conf_args, vars={"PKG_CFG_ARGS": " ".join(conf_args)})
+
+        # https://core.tcl.tk/tcl/tktview/840660e5a1
+        for root, _, files in os.walk(self.build_folder):
+            if "Makefile" in files:
+                tools.replace_in_file(os.path.join(root, "Makefile"), "-Dstrtod=fixstrtod", "", strict=False)
 
         with tools.chdir(self.build_folder):
             autoTools.make()
