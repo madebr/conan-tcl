@@ -7,7 +7,7 @@ import os
 
 class TclConan(ConanFile):
     name = "tcl"
-    version = "8.6.8"
+    version = "8.6.9"
     description = "Tcl is a very powerful but easy to learn dynamic programming language."
     topics = ["conan", "tcl", "scripting", "programming"]
     url = "https://github.com/bincrafters/conan-tcl"
@@ -41,7 +41,7 @@ class TclConan(ConanFile):
 
     def source(self):
         url = "https://prdownloads.sourceforge.net/tcl/tcl{}-src.tar.gz".format(self.version)
-        tools.get(url, sha256="c43cb0c1518ce42b00e7c8f6eaddd5195c53a98f94adc717234a65cbcfd3f96a")
+        tools.get(url, sha256="ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e")
         extracted_dir = "{}{}".format(self.name, self.version)
         os.rename(extracted_dir, self._source_subfolder)
 

@@ -1,6 +1,6 @@
 [![Download](https://api.bintray.com/packages/bincrafters/public-conan/tcl%3Abincrafters/images/download.svg) ](https://bintray.com/bincrafters/public-conan/tcl%3Abincrafters/_latestVersion)
-[![Build Status](https://travis-ci.org/bincrafters/conan-tcl.svg?branch=stable%2F8.6.8)](https://travis-ci.org/bincrafters/conan-tcl)
-[![Build status](https://ci.appveyor.com/api/projects/status/github/bincrafters/conan-tcl?branch=stable%2F8.6.8&svg=true)](https://ci.appveyor.com/project/bincrafters/conan-tcl)
+[![Build Status](https://travis-ci.org/bincrafters/conan-tcl.svg?branch=stable%2F8.6.9)](https://travis-ci.org/bincrafters/conan-tcl)
+[![Build status](https://ci.appveyor.com/api/projects/status/github/bincrafters/conan-tcl?branch=stable%2F8.6.9&svg=true)](https://ci.appveyor.com/project/bincrafters/conan-tcl)
 
 [Conan.io](https://conan.io) package recipe for [*tcl*](https://tcl.tk).
 
@@ -12,14 +12,14 @@ The packages generated with this **conanfile** can be found on [Bintray](https:/
 
 ### Basic setup
 
-    $ conan install tcl/8.6.8@bincrafters/stable
+    $ conan install tcl/8.6.9@bincrafters/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    tcl/8.6.8@bincrafters/stable
+    tcl/8.6.9@bincrafters/stable
 
     [generators]
     txt
@@ -44,7 +44,7 @@ The following command both runs all the steps of the conan file, and publishes t
 ### Available Options
 | Option        | Default | Possible Values  |
 | ------------- |:----------------- |:------------:|
-| fPIC      | False |  [True, False] |
+| fPIC      | True |  [True, False] |
 | shared      | False |  [True, False] |
 
 ## Add Remote
@@ -53,7 +53,7 @@ The following command both runs all the steps of the conan file, and publishes t
 
 ## Upload
 
-    $ conan upload tcl/8.6.8@bincrafters/stable --all -r bincrafters
+    $ conan upload tcl/8.6.9@bincrafters/stable --all -r bincrafters
 
 
 ## Conan Recipe License
@@ -61,4 +61,4 @@ The following command both runs all the steps of the conan file, and publishes t
 NOTE: The conan recipe license applies only to the files of this recipe, which can be used to build and package tcl.
 It does *not* in any way apply or is related to the actual software being packaged.
 
-[MIT](git@github.com:bincrafters/conan-tcl.git/blob/8.6.8/stable/LICENSE.md)
+[MIT](git@github.com:bincrafters/conan-tcl.git/blob/testing/8.6.9/LICENSE)
