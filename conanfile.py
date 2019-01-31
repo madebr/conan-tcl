@@ -155,9 +155,6 @@ class TclConan(ConanFile):
             if newlibs:
                 libs.extend(newlibs)
                 libdirs.append(root)
-        if self._is_mingw_windows:
-            # FIXME: bug in zlib/1.2.11@conan/stable ??
-            libs.append("z")
         if self.settings.compiler == "Visual Studio":
             libs.extend(["netapi32"])
         else:
