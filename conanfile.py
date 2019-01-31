@@ -2,7 +2,9 @@
 
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 from conans.errors import ConanExceptionInUserConanfileMethod
+from conans.util.env_reader import get_env
 import os
+import tempfile
 
 
 class TclConan(ConanFile):
@@ -40,8 +42,19 @@ class TclConan(ConanFile):
             self.build_requires("msys2_installer/latest@bincrafters/stable")
 
     def source(self):
-        url = "https://prdownloads.sourceforge.net/tcl/tcl{}-src.tar.gz".format(self.version)
-        tools.get(url, sha256="ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e")
+        filename = "tcl{}-src.tar.gz".format(self.version)
+        url = "https://prdownloads.sourceforge.net/tcl/{}".format(filename)
+        sha256 = "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e"
+
+        dlfilepath = os.path.join(tempfile.gettempdir(), filename)
+        if os.path.exists(dlfilepath) and not get_env("TCL_FORCE_DOWNLOAD", False):
+            self.output.info("Skipping download. Using cached {}".format(dlfilepath))
+        else:
+            self.output.info("Downloading {} from {}".format(self.name, url))
+            tools.download(url, dlfilepath)
+        tools.check_sha256(dlfilepath, sha256)
+        tools.untargz(dlfilepath)
+
         extracted_dir = "{}{}".format(self.name, self.version)
         os.rename(extracted_dir, self._source_subfolder)
 
