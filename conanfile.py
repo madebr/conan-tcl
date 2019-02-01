@@ -4,6 +4,7 @@ from conans import ConanFile, AutoToolsBuildEnvironment, tools
 from conans.errors import ConanExceptionInUserConanfileMethod
 from conans.util.env_reader import get_env
 import os
+import shutil
 import tempfile
 
 
@@ -100,9 +101,6 @@ class TclConan(ConanFile):
 
     def _get_auto_tools(self):
         autoTools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
-        if self._is_mingw_windows:
-            # FIXME: bug in zlib/1.2.11@conan/stable ??
-            autoTools.libs.append("z")
         return autoTools
 
     def _build_nmake(self, target="release"):
@@ -158,6 +156,7 @@ class TclConan(ConanFile):
             with tools.chdir(self.build_folder):
                 autoTools = self._get_auto_tools()
                 autoTools.install()
+            shutil.rmtree(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.copy(pattern="license.terms", dst="licenses", src=self._source_subfolder)
 
     def package_info(self):
