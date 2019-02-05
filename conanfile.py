@@ -76,11 +76,8 @@ class TclConan(ConanFile):
         tools.replace_in_file(unix_makefile_in, "${CFLAGS}", "${CFLAGS} ${CPPFLAGS}")
 
     def config_options(self):
-        if self.settings.os == "Windows":
+        if self.settings.compiler == "Visual Studio" or self.options.shared:
             del self.options.fPIC
-        else:
-            if self.options.shared:
-                del self.options.fPIC  # Does not make sense.
 
     def _get_default_build_system(self):
         if self.settings.os == "Macos":
@@ -114,6 +111,8 @@ class TclConan(ConanFile):
             opts.append("msvcrt")
         else:
             opts.append("nomsvcrt")
+        if "d" in self.settings.compiler.runtime:
+            opts.append("unchecked")
         vcvars_command = tools.vcvars_command(self.settings)
         self.run(
             '{vcvars} && nmake -nologo -f "{cfgdir}/makefile.vc" shell INSTALLDIR="{pkgdir}" OPTS={opts} {target}'.format(
