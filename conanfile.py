@@ -186,3 +186,9 @@ class TclConan(ConanFile):
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework Cocoa")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
+
+        tclsh_list = list(filter(lambda fn: fn.startswith("tclsh"), os.listdir(os.path.join(self.package_folder, "bin"))))
+        assert(len(tclsh_list))
+        tclsh = os.path.join(self.package_folder, "bin", tclsh_list[0])
+        self.output.info("Setting TCLSH environment variable to {}".format(tclsh))
+        self.env_info.TCLSH = tclsh
