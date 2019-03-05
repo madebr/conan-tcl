@@ -111,7 +111,7 @@ class TclConan(ConanFile):
             opts.append("msvcrt")
         else:
             opts.append("nomsvcrt")
-        if "d" in self.settings.compiler.runtime:
+        if "d" not in self.settings.compiler.runtime:
             opts.append("unchecked")
         vcvars_command = tools.vcvars_command(self.settings)
         self.run(
@@ -192,7 +192,7 @@ class TclConan(ConanFile):
         if not self.options.shared:
             defines.append("STATIC_BUILD")
         self.cpp_info.defines = defines
-        
+
         self.cpp_info.bindirs = ["bin"]
         self.cpp_info.libdirs = libdirs
         self.cpp_info.libs = libs
