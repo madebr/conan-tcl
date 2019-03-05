@@ -162,12 +162,14 @@ class TclConan(ConanFile):
         tclConfigShPath = os.path.join(self.package_folder, "lib", "tclConfig.sh")
         tools.replace_in_file(tclConfigShPath,
                               os.path.join(self.package_folder),
-                              "$TCL_ROOT"
-                              )
+                              "${TCL_ROOT}")
         tools.replace_in_file(tclConfigShPath,
-                              "TCL_BUILD_",
-                              "#TCL_BUILD_"
-                              )
+                              "\nTCL_BUILD_",
+                              "\n#TCL_BUILD_")
+
+        tools.replace_in_file(tclConfigShPath,
+                              "\nTCL_SRC_DIR",
+                              "\n#TCL_SRC_DIR")
 
     def package_info(self):
         libs = []
@@ -185,18 +187,24 @@ class TclConan(ConanFile):
                 libs.extend(["ws2_32", "netapi32", "userenv"])
             else:
                 libs.append("dl")
+
         defines = []
         if not self.options.shared:
             defines.append("STATIC_BUILD")
         self.cpp_info.defines = defines
+        
         self.cpp_info.bindirs = ["bin"]
         self.cpp_info.libdirs = libdirs
         self.cpp_info.libs = libs
         self.cpp_info.includedirs = ["include"]
-        self.env_info.TCL_LIBRARY = os.path.join(self.package_folder, "lib", "{}{}".format(self.name, ".".join(self.version.split(".")[:2])))
+
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework Cocoa")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
+
+        tcl_library = os.path.join(self.package_folder, "lib", "{}{}".format(self.name, ".".join(self.version.split(".")[:2])))
+        self.output.info("Setting TCL_LIBRARY environment variable to {}".format(tcl_library))
+        self.env_info.TCL_LIBRARY = tcl_library
 
         tcl_root = self.package_folder
         self.output.info("Setting TCL_ROOT environment variable to {}".format(tcl_root))

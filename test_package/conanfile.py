@@ -26,4 +26,4 @@ class TclTestConan(ConanFile):
                 self.run("DYLD_LIBRARY_PATH={} {}".format(os.environ.get("DYLD_LIBRARY_PATH", ""), bin_path))
             else:
                 self.run(bin_path)
-        assert(os.path.exists(os.environ("TCLSH")))
+        assert(os.path.exists(os.environ["TCLSH"]))
