@@ -155,8 +155,19 @@ class TclConan(ConanFile):
             with tools.chdir(self.build_folder):
                 autoTools = self._get_auto_tools()
                 autoTools.install()
+                autoTools.make(target="install-private-headers")
             shutil.rmtree(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.copy(pattern="license.terms", dst="licenses", src=self._source_subfolder)
+
+        tclConfigShPath = os.path.join(self.package_folder, "lib", "tclConfig.sh")
+        tools.replace_in_file(tclConfigShPath,
+                              os.path.join(self.package_folder),
+                              "$TCL_ROOT"
+                              )
+        tools.replace_in_file(tclConfigShPath,
+                              "TCL_BUILD_",
+                              "#TCL_BUILD_"
+                              )
 
     def package_info(self):
         libs = []
@@ -187,8 +198,16 @@ class TclConan(ConanFile):
             self.cpp_info.exelinkflags.append("-framework Cocoa")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
 
+        tcl_root = self.package_folder
+        self.output.info("Setting TCL_ROOT environment variable to {}".format(tcl_root))
+        self.env_info.TCL_ROOT = tcl_root
+
         tclsh_list = list(filter(lambda fn: fn.startswith("tclsh"), os.listdir(os.path.join(self.package_folder, "bin"))))
         assert(len(tclsh_list))
         tclsh = os.path.join(self.package_folder, "bin", tclsh_list[0])
         self.output.info("Setting TCLSH environment variable to {}".format(tclsh))
         self.env_info.TCLSH = tclsh
+
+        bindir = os.path.join(self.package_folder, "bin")
+        self.output.info("Adding PATH environment variable: {}".format(bindir))
+        self.env_info.PATH.append(bindir)
