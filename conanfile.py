@@ -44,7 +44,7 @@ class TclConan(ConanFile):
 
     def source(self):
         filename = "tcl{}-src.tar.gz".format(self.version)
-        url = "https://prdownloads.sourceforge.net/tcl/{}".format(filename)
+        url = "https://downloads.sourceforge.net/project/tcl/Tcl/{}/{}".format(self.version, filename)
         sha256 = "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e"
 
         dlfilepath = os.path.join(tempfile.gettempdir(), filename)
