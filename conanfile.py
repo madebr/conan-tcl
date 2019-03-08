@@ -28,7 +28,7 @@ class TclConan(ConanFile):
         "shared": False,
     }
     _source_subfolder = "sources"
-    requires = ("zlib/1.2.11@conan/stable")
+    requires = ("zlib/1.2.11@conan/stable", )
 
     @property
     def _is_mingw_windows(self):
