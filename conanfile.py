@@ -28,7 +28,7 @@ class TclConan(ConanFile):
         "shared": False,
     }
     _source_subfolder = "sources"
-    requires = ("zlib/1.2.11@conan/stable")
+    requires = ("zlib/1.2.11@conan/stable", )
 
     @property
     def _is_mingw_windows(self):
@@ -44,7 +44,7 @@ class TclConan(ConanFile):
 
     def source(self):
         filename = "tcl{}-src.tar.gz".format(self.version)
-        url = "https://prdownloads.sourceforge.net/tcl/{}".format(filename)
+        url = "https://downloads.sourceforge.net/project/tcl/Tcl/{}/{}".format(self.version, filename)
         sha256 = "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e"
 
         dlfilepath = os.path.join(tempfile.gettempdir(), filename)
@@ -76,11 +76,8 @@ class TclConan(ConanFile):
         tools.replace_in_file(unix_makefile_in, "${CFLAGS}", "${CFLAGS} ${CPPFLAGS}")
 
     def config_options(self):
-        if self.settings.os == "Windows":
+        if self.settings.compiler == "Visual Studio" or self.options.shared:
             del self.options.fPIC
-        else:
-            if self.options.shared:
-                del self.options.fPIC  # Does not make sense.
 
     def _get_default_build_system(self):
         if self.settings.os == "Macos":
@@ -114,6 +111,8 @@ class TclConan(ConanFile):
             opts.append("msvcrt")
         else:
             opts.append("nomsvcrt")
+        if "d" not in self.settings.compiler.runtime:
+            opts.append("unchecked")
         vcvars_command = tools.vcvars_command(self.settings)
         self.run(
             '{vcvars} && nmake -nologo -f "{cfgdir}/makefile.vc" shell INSTALLDIR="{pkgdir}" OPTS={opts} {target}'.format(
@@ -156,8 +155,21 @@ class TclConan(ConanFile):
             with tools.chdir(self.build_folder):
                 autoTools = self._get_auto_tools()
                 autoTools.install()
+                autoTools.make(target="install-private-headers")
             shutil.rmtree(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.copy(pattern="license.terms", dst="licenses", src=self._source_subfolder)
+
+        tclConfigShPath = os.path.join(self.package_folder, "lib", "tclConfig.sh")
+        tools.replace_in_file(tclConfigShPath,
+                              os.path.join(self.package_folder),
+                              "${TCL_ROOT}")
+        tools.replace_in_file(tclConfigShPath,
+                              "\nTCL_BUILD_",
+                              "\n#TCL_BUILD_")
+
+        tools.replace_in_file(tclConfigShPath,
+                              "\nTCL_SRC_DIR",
+                              "\n#TCL_SRC_DIR")
 
     def package_info(self):
         libs = []
@@ -175,15 +187,35 @@ class TclConan(ConanFile):
                 libs.extend(["ws2_32", "netapi32", "userenv"])
             else:
                 libs.append("dl")
+
         defines = []
         if not self.options.shared:
             defines.append("STATIC_BUILD")
         self.cpp_info.defines = defines
+
         self.cpp_info.bindirs = ["bin"]
         self.cpp_info.libdirs = libdirs
         self.cpp_info.libs = libs
         self.cpp_info.includedirs = ["include"]
-        self.env_info.TCL_LIBRARY = os.path.join(self.package_folder, "lib", "{}{}".format(self.name, ".".join(self.version.split(".")[:2])))
+
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework Cocoa")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
+
+        tcl_library = os.path.join(self.package_folder, "lib", "{}{}".format(self.name, ".".join(self.version.split(".")[:2])))
+        self.output.info("Setting TCL_LIBRARY environment variable to {}".format(tcl_library))
+        self.env_info.TCL_LIBRARY = tcl_library
+
+        tcl_root = self.package_folder
+        self.output.info("Setting TCL_ROOT environment variable to {}".format(tcl_root))
+        self.env_info.TCL_ROOT = tcl_root
+
+        tclsh_list = list(filter(lambda fn: fn.startswith("tclsh"), os.listdir(os.path.join(self.package_folder, "bin"))))
+        assert(len(tclsh_list))
+        tclsh = os.path.join(self.package_folder, "bin", tclsh_list[0])
+        self.output.info("Setting TCLSH environment variable to {}".format(tclsh))
+        self.env_info.TCLSH = tclsh
+
+        bindir = os.path.join(self.package_folder, "bin")
+        self.output.info("Adding PATH environment variable: {}".format(bindir))
+        self.env_info.PATH.append(bindir)
