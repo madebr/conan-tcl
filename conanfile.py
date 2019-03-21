@@ -156,12 +156,17 @@ class TclConan(ConanFile):
                 autoTools = self._get_auto_tools()
                 autoTools.install()
                 autoTools.make(target="install-private-headers")
-            shutil.rmtree(os.path.join(self.package_folder, "lib", "pkgconfig"))
+            pkgconfig_dir = os.path.join(self.package_folder, "lib", "pkgconfig")
+            if os.path.isdir(pkgconfig_dir):
+                shutil.rmtree(pkgconfig_dir)
         self.copy(pattern="license.terms", dst="licenses", src=self._source_subfolder)
 
         tclConfigShPath = os.path.join(self.package_folder, "lib", "tclConfig.sh")
+        package_path = os.path.join(self.package_folder)
+        if self._is_mingw_windows:
+            package_path = package_path.replace("\\", "/")
         tools.replace_in_file(tclConfigShPath,
-                              os.path.join(self.package_folder),
+                              package_path,
                               "${TCL_ROOT}")
         tools.replace_in_file(tclConfigShPath,
                               "\nTCL_BUILD_",
