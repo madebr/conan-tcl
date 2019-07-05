@@ -12,7 +12,7 @@ class TclConan(ConanFile):
     name = "tcl"
     version = "8.6.9"
     description = "Tcl is a very powerful but easy to learn dynamic programming language."
-    topics = ["conan", "tcl", "scripting", "programming"]
+    topics = ("conan", "tcl", "scripting", "programming")
     url = "https://github.com/bincrafters/conan-tcl"
     homepage = "https://tcl.tk"
     author = "Bincrafters <bincrafters@gmail.com>"
@@ -44,21 +44,15 @@ class TclConan(ConanFile):
 
     def source(self):
         filename = "tcl{}-src.tar.gz".format(self.version)
-        url = "https://downloads.sourceforge.net/project/tcl/Tcl/{}/{}".format(self.version, filename)
         sha256 = "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e"
 
-        dlfilepath = os.path.join(tempfile.gettempdir(), filename)
-        if os.path.exists(dlfilepath) and not get_env("TCL_FORCE_DOWNLOAD", False):
-            self.output.info("Skipping download. Using cached {}".format(dlfilepath))
-        else:
-            self.output.info("Downloading {} from {}".format(self.name, url))
-            tools.download(url, dlfilepath)
-        tools.check_sha256(dlfilepath, sha256)
-        tools.untargz(dlfilepath)
+        tools.get("https://downloads.sourceforge.net/project/tcl/Tcl/{}/{}".format(self.version, filename),
+                  sha256=sha256)
 
         extracted_dir = "{}{}".format(self.name, self.version)
         os.rename(extracted_dir, self._source_subfolder)
 
+    def _fix_sources(self):
         unix_config_dir = self._get_configure_dir("unix")
         # When disabling 64-bit support (in 32-bit), this test must be 0 in order to use "long long" for 64-bit ints
         # (${tcl_type_64bit} can be either "__int64" or "long long")
@@ -143,6 +137,7 @@ class TclConan(ConanFile):
             autoTools.make()
 
     def build(self):
+        self._fix_sources()
         if self.settings.compiler == "Visual Studio":
             self._build_nmake()
         else:
